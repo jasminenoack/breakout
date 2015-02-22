@@ -1,8 +1,4 @@
 // move the ball
-var x = 150;
-var y = 150;
-var dx = 2;
-var dy = 4;
 var ctx,
   WIDTH,
   HEIGHT,
@@ -19,20 +15,59 @@ var ctx,
   BRICKHEIGHT,
   PADDING,
   i,
-  j;
-var rightDown = false;
-var leftDown = false;
+  j,
+  x,
+  y,
+  dx,
+  dy,
+  ctx,
+  pause,
+  rightDown,
+  leftDown,
+  lost;
+
+$(document).keydown(onKeyDown);
+$(document).keyup(onKeyUp);
+$(document).mousemove(onMouseMove);
+$("#canvas").click(togglePause)
 
 // get a reference to the canvas, set the interval
 function init() {
+  if (!ctx) {
+    initCanvas();
+    initMouse();
+  }
+  initBall();
+  initPaddle();
+  initBricks();
+  initUIVars();
+
+  draw()
+}
+
+function initCanvas() {
   var canvas = document.getElementById('canvas');
   WIDTH = canvas.width;
   HEIGHT = canvas.height;
   ctx = canvas.getContext('2d');
-  initPaddle();
-  initMouse();
-  initBricks();
-  return interval = setInterval(draw, 10);
+}
+
+function initMouse() {
+  canvasMinX = $("#canvas").offset().left
+  canvasMaxX = canvasMinX + WIDTH;
+}
+
+function initBall() {
+  x = 150;
+  y = 150;
+  dx = 2;
+  dy = 4;
+}
+
+function initPaddle() {
+  paddleh = 10;
+  paddlew = 75;
+  paddlex = WIDTH/2 - paddlew/2;
 }
 
 function initBricks() {
@@ -51,31 +86,35 @@ function initBricks() {
   }
 }
 
-function initMouse() {
-  canvasMinX = $("#canvas").offset().left
-  canvasMaxX = canvasMinX + WIDTH;
-}
-
-function onMouseMove(evt) {
-  if (evt.pageX > canvasMinX && evt.pageX < canvasMaxX) {
-    paddlex = evt.pageX - canvasMinX - paddlew/2;
+function initUIVars() {
+  if (pause === undefined){
+    pause = true;
   }
+  rightDown = false;
+  leftDown = false;
+  lost = false;
 }
 
-function circle(x,y,r) {
-  ctx.fillStyle = "blue"
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2, true);
-  ctx.closePath();
-  ctx.fill();
+function draw() {
+  clear();
+  checkLost()
+  drawBoard();
+  circle(x, y, 10);
+  checkWalls();
+  movePaddle();
+  drawBricks();
+  hitBricks();
+  rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
+
+  x += dx;
+  y += dy;
 }
 
-function rect(x, y, w, h) {
-  ctx.fillStyle = "red";
-  ctx.beginPath();
-  ctx.rect(x,y,w,h);
-  ctx.closePath();
-  ctx.fill();
+function checkLost() {
+  if (lost) {
+    togglePause()
+    init()
+  }
 }
 
 function clear() {
@@ -84,8 +123,14 @@ function clear() {
 
 function drawBoard() {
   ctx.fillStyle = "black";
-  ctx.beginPath();
   ctx.rect(0,0,WIDTH, HEIGHT);
+  ctx.fill();
+}
+
+function circle(x,y,r) {
+  ctx.fillStyle = "blue"
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.fill();
 }
@@ -100,15 +145,19 @@ function checkWalls() {
     if (x > paddlex && x < paddlex + paddlew) {
       dy = -dy;
     } else {
-      clearInterval(interval);
+      lost = true;
+      endInterval;
+      dy = -dy;
     }
   }
 }
 
-function initPaddle() {
-  paddlex = WIDTH/2;
-  paddleh = 10;
-  paddlew = 75;
+function movePaddle() {
+  if (rightDown) {
+    paddlex += 5
+  } else if (leftDown) {
+    paddlex -= 5
+  }
 }
 
 function onKeyDown(evt) {
@@ -126,11 +175,9 @@ function onKeyUp(evt) {
   } else if (evt.keyCode == 37) leftDown = false;
 }
 
-function movePaddle() {
-  if (rightDown) {
-    paddlex += 5
-  } else if (leftDown) {
-    paddlex -= 5
+function onMouseMove(evt) {
+  if (evt.pageX > canvasMinX && evt.pageX < canvasMaxX) {
+    paddlex = evt.pageX - canvasMinX - paddlew/2;
   }
 }
 
@@ -161,37 +208,30 @@ function hitBricks() {
   }
 }
 
-// End library code
-
-$(document).keydown(onKeyDown);
-$(document).keyup(onKeyUp);
-$(document).mousemove(onMouseMove);
-
-function draw() {
-  clear();
-  drawBoard();
-  circle(x, y, 10);
-  checkWalls();
-  movePaddle();
-  drawBricks();
-  hitBricks();
-  rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
-
-  x += dx;
-  y += dy;
+function rect(x, y, w, h) {
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.rect(x,y,w,h);
+  ctx.closePath();
+  ctx.fill();
 }
 
+function togglePause() {
+ if (pause) {
+    pause = false
+    initInterval()
+  } else {
+    pause = true
+    endInterval()
+  }
+}
+
+function initInterval() {
+  return interval = setInterval(draw, 10);
+}
+
+function endInterval() {
+  clearInterval(interval)
+}
+// End library code
 init();
-
-
-
-// ctx.fillStyle = "black";
-// ctx.fillRect(0,0,300,300);
-//
-//
-// // draw a circle
-ctx.fillStyle = "blue"
-ctx.beginPath();
-ctx.arc(75, 75, 10, 0, Math.PI * 2, true);
-ctx.closePath();
-ctx.fill();

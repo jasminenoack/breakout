@@ -24,56 +24,179 @@ var ctx,
   pause,
   rightDown,
   leftDown,
-  lost;
+  lost,
+  slope;
 
 $(document).keydown(onKeyDown);
 $(document).keyup(onKeyUp);
 $(document).mousemove(onMouseMove);
-$("#canvas").click(togglePause)
+$("#canvas").click(clickEvent)
 
 // get a reference to the canvas, set the interval
+
+
+function checkLost() {
+  if (lost) {
+    togglePause()
+  }
+}
+
+function clickEvent() {
+  if (lost) {
+    lost = false;
+    init()
+  } else if (pause === undefined) {
+    init()
+  } else {
+    togglePause()
+  }
+}
+
+function circle(x,y,r) {
+  ctx.fillStyle = "blue"
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function clear() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+}
+
+function draw() {
+  clear();
+  checkLost()
+  drawBoard();
+  pauseMessage()
+  circle(x, y, 10);
+  hitWalls();
+  movePaddle();
+  drawBricks();
+  hitBricks();
+  drawPaddle();
+
+  x += dx;
+  y += dy;
+}
+
+function drawBoard() {
+  ctx.fillStyle = "black";
+  ctx.rect(0,0,WIDTH, HEIGHT);
+  ctx.fill();
+}
+
+function drawBricks() {
+  for (i = 0; i < NROWS; i++) {
+    for (j = 0; j < NCOLS; j++) {
+      if (bricks[i][j] == 1) {
+        rect((j * (BRICKWIDTH + PADDING))+ PADDING,
+             (i * (BRICKHEIGHT + PADDING)) + PADDING,
+             BRICKWIDTH, BRICKHEIGHT)
+      }
+    }
+  }
+}
+
+function drawPaddle() {
+  rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
+}
+
+function endInterval() {
+  clearInterval(interval)
+}
+
+function hitBricks() {
+  rowHeight = BRICKHEIGHT + PADDING;
+  colWidth = BRICKWIDTH + PADDING;
+  row = Math.floor(y/rowHeight);
+  col = Math.floor(x/colWidth);
+
+  if (
+    y < NROWS * rowHeight && row >= 0 &&
+    col >= 0 && bricks[row][col] == 1
+  ) {
+    dy = -dy;
+    bricks[row][col] = 0;
+  }
+}
+
+function hitPaddle() {
+  dy = -dy;
+  if (x < paddlex + paddlew / 3) {
+    if (dx > 0) {
+      raiseDeltaY()
+    } else {
+      lowerDeltaY()
+    }
+
+  } else if (x < paddlex + (paddlew / 3) * 2) {
+    return
+
+  } else {
+    if (dx > 0) {
+      lowerDeltaY()
+    } else {
+      raiseDeltaY()
+    }
+  }
+}
+
+function hitWalls() {
+  if (x + dx > WIDTH || x + dx < 0) {
+    dx = -dx;
+  }
+  if (y + dy < 0) {
+    dy = -dy;
+  } else if ( y + dy > HEIGHT - paddleh/2 ) {
+    if (x > paddlex && x < paddlex + paddlew) {
+      hitPaddle()
+    } else {
+      lost = true;
+      endInterval;
+      dy = -dy;
+    }
+  }
+}
+
+
+function raiseDeltaY() {
+  if (dy >= 6) {
+    return
+  } else {
+    dy += 1
+  }
+}
+
+function lowerDeltaY() {
+  if (dy <= 2) {
+    return
+  } else {
+    dy -= 1
+  }
+}
+
 function init() {
   if (!ctx) {
     initCanvas();
     initMouse();
+    initWelcome();
+  } else {
+    start();
   }
-  initBall();
-  initPaddle();
-  initBricks();
-  initUIVars();
-
-  draw()
-}
-
-function initCanvas() {
-  var canvas = document.getElementById('canvas');
-  WIDTH = canvas.width;
-  HEIGHT = canvas.height;
-  ctx = canvas.getContext('2d');
-}
-
-function initMouse() {
-  canvasMinX = $("#canvas").offset().left
-  canvasMaxX = canvasMinX + WIDTH;
 }
 
 function initBall() {
-  x = 150;
+  x = (Math.random() * WIDTH / 2) + WIDTH / 4;
   y = 150;
   dx = 2;
   dy = 4;
 }
 
-function initPaddle() {
-  paddleh = 10;
-  paddlew = 75;
-  paddlex = WIDTH/2 - paddlew/2;
-}
-
 function initBricks() {
-  NROWS = 5;
-  NCOLS = 5;
-  BRICKWIDTH = (WIDTH/NCOLS) - 1;
+  NROWS = 8;
+  NCOLS = 8;
+  BRICKWIDTH = ((WIDTH - 1)/NCOLS) - 1;
   BRICKHEIGHT = 15;
   PADDING = 1;
 
@@ -86,6 +209,28 @@ function initBricks() {
   }
 }
 
+function initCanvas() {
+  var canvas = document.getElementById('canvas');
+  WIDTH = canvas.width;
+  HEIGHT = canvas.height;
+  ctx = canvas.getContext('2d');
+}
+
+function initInterval() {
+  return interval = setInterval(draw, 10);
+}
+
+function initMouse() {
+  canvasMinX = $("#canvas").offset().left
+  canvasMaxX = canvasMinX + WIDTH;
+}
+
+function initPaddle() {
+  paddleh = 10 ;
+  paddlew = 75;
+  paddlex = WIDTH/2 - paddlew/2;
+}
+
 function initUIVars() {
   if (pause === undefined){
     pause = true;
@@ -95,61 +240,15 @@ function initUIVars() {
   lost = false;
 }
 
-function draw() {
-  clear();
-  checkLost()
+function initWelcome() {
   drawBoard();
-  circle(x, y, 10);
-  checkWalls();
-  movePaddle();
-  drawBricks();
-  hitBricks();
-  rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
-
-  x += dx;
-  y += dy;
-}
-
-function checkLost() {
-  if (lost) {
-    togglePause()
-    init()
-  }
-}
-
-function clear() {
-  ctx.clearRect(0, 0, WIDTH, HEIGHT);
-}
-
-function drawBoard() {
-  ctx.fillStyle = "black";
-  ctx.rect(0,0,WIDTH, HEIGHT);
-  ctx.fill();
-}
-
-function circle(x,y,r) {
-  ctx.fillStyle = "blue"
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2, true);
-  ctx.closePath();
-  ctx.fill();
-}
-
-function checkWalls() {
-  if (x + dx > WIDTH || x + dx < 0) {
-    dx = -dx;
-  }
-  if (y + dy < 0) {
-    dy = -dy;
-  } else if ( y + dy > HEIGHT ) {
-    if (x > paddlex && x < paddlex + paddlew) {
-      dy = -dy;
-    } else {
-      lost = true;
-      endInterval;
-      dy = -dy;
-    }
-  }
+  ctx.fillStyle = "White"
+  ctx.font = "48px sans-serif";
+  ctx.fillText("Welcome", 10, 50);
+  ctx.font = "32px sans-serif";
+  ctx.fillText("Play BreakOut", 20, 100);
+  ctx.font = "26px sans-serif";
+  ctx.fillText("Click to Start!", 50, 150);
 }
 
 function movePaddle() {
@@ -181,30 +280,17 @@ function onMouseMove(evt) {
   }
 }
 
-function drawBricks() {
-  for (i = 0; i < NROWS; i++) {
-    for (j = 0; j < NCOLS; j++) {
-      if (bricks[i][j] == 1) {
-        rect((j * (BRICKWIDTH + PADDING))+ PADDING,
-             (i * (BRICKHEIGHT + PADDING)) + PADDING,
-             BRICKWIDTH, BRICKHEIGHT)
-      }
-    }
-  }
-}
-
-function hitBricks() {
-  rowHeight = BRICKHEIGHT + PADDING;
-  colWidth = BRICKWIDTH + PADDING;
-  row = Math.floor(y/rowHeight);
-  col = Math.floor(x/colWidth);
-
-  if (
-    y < NROWS * rowHeight && row >= 0 &&
-    col >= 0 && bricks[row][col] == 1
-  ) {
-    dy = -dy;
-    bricks[row][col] = 0;
+function pauseMessage() {
+  ctx.fillStyle = "White"
+  if (lost) {
+    ctx.font = "26px sans-serif";
+    ctx.fillText("Click to Restart!", 50, 150);
+  } else if (pause){
+    ctx.font = "26px sans-serif";
+    ctx.fillText("Click to Resume", 50, 150);
+  } else {
+    ctx.font = "26px sans-serif";
+    ctx.fillText("Click to Pause", 50, 150);
   }
 }
 
@@ -216,6 +302,14 @@ function rect(x, y, w, h) {
   ctx.fill();
 }
 
+function start() {
+  initBall();
+  initPaddle();
+  initBricks();
+  initUIVars();
+  draw();
+}
+
 function togglePause() {
  if (pause) {
     pause = false
@@ -223,15 +317,31 @@ function togglePause() {
   } else {
     pause = true
     endInterval()
+    draw
   }
 }
 
-function initInterval() {
-  return interval = setInterval(draw, 10);
-}
 
-function endInterval() {
-  clearInterval(interval)
-}
+
+
+// rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // End library code
 init();

@@ -24,8 +24,7 @@ var ctx,
   pause,
   rightDown,
   leftDown,
-  lost,
-  slope;
+  lost;
 
 $(document).keydown(onKeyDown);
 $(document).keyup(onKeyUp);
@@ -148,7 +147,7 @@ function hitWalls() {
   }
   if (y + dy < 0) {
     dy = -dy;
-  } else if ( y + dy > HEIGHT - paddleh/2 ) {
+  } else if ( y + dy > HEIGHT - paddleh ) {
     if (x > paddlex && x < paddlex + paddlew) {
       hitPaddle()
     } else {
@@ -159,9 +158,8 @@ function hitWalls() {
   }
 }
 
-
 function raiseDeltaY() {
-  if (dy >= 6) {
+  if (dy >= 8) {
     return
   } else {
     dy += 1
@@ -169,7 +167,7 @@ function raiseDeltaY() {
 }
 
 function lowerDeltaY() {
-  if (dy <= 2) {
+  if (dy <= 4) {
     return
   } else {
     dy -= 1
@@ -189,8 +187,8 @@ function init() {
 function initBall() {
   x = (Math.random() * WIDTH / 2) + WIDTH / 4;
   y = 150;
-  dx = 2;
-  dy = 4;
+  dx = 3;
+  dy = 6;
 }
 
 function initBricks() {

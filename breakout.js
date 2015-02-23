@@ -24,7 +24,8 @@ var ctx,
   pause,
   rightDown,
   leftDown,
-  lost;
+  lost,
+  d;
 
 $(document).keydown(onKeyDown);
 $(document).keyup(onKeyUp);
@@ -68,7 +69,7 @@ function draw() {
   checkLost()
   drawBoard();
   pauseMessage()
-  circle(x, y, 10);
+  circle(x, y, d);
   hitWalls();
   movePaddle();
   drawBricks();
@@ -142,13 +143,13 @@ function hitPaddle() {
 }
 
 function hitWalls() {
-  if (x + dx > WIDTH || x + dx < 0) {
+  if (x > WIDTH - d || x < 0 + d) {
     dx = -dx;
   }
-  if (y + dy < 0) {
+  if (y < 0) {
     dy = -dy;
-  } else if ( y + dy > HEIGHT - paddleh ) {
-    if (x > paddlex && x < paddlex + paddlew) {
+  } else if ( y > HEIGHT - paddleh/3 - d) {
+    if (x > paddlex - d && x < paddlex + paddlew + d) {
       hitPaddle()
     } else {
       lost = true;
@@ -159,18 +160,18 @@ function hitWalls() {
 }
 
 function raiseDeltaY() {
-  if (dy >= 8) {
+  if (dy <= (-HEIGHT/40)) {
     return
   } else {
-    dy += 1
+    dy += dy/3
   }
 }
 
 function lowerDeltaY() {
-  if (dy <= 4) {
+  if (dy >= -HEIGHT/150) {
     return
   } else {
-    dy -= 1
+    dy -= dy/3
   }
 }
 
@@ -187,8 +188,9 @@ function init() {
 function initBall() {
   x = (Math.random() * WIDTH / 2) + WIDTH / 4;
   y = 150;
-  dx = 3;
-  dy = 6;
+  dx = WIDTH / 150;
+  dy = HEIGHT / 75;
+ d= 10;
 }
 
 function initBricks() {

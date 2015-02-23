@@ -1,4 +1,3 @@
-// move the ball
 var ctx,
   WIDTH,
   HEIGHT,
@@ -31,9 +30,6 @@ $(document).keydown(onKeyDown);
 $(document).keyup(onKeyUp);
 $(document).mousemove(onMouseMove);
 $("#canvas").click(clickEvent)
-
-// get a reference to the canvas, set the interval
-
 
 function checkLost() {
   if (lost) {
@@ -109,11 +105,12 @@ function endInterval() {
 function hitBricks() {
   rowHeight = BRICKHEIGHT + PADDING;
   colWidth = BRICKWIDTH + PADDING;
-  row = Math.floor(y/rowHeight);
-  col = Math.floor(x/colWidth);
+
+  row = Math.floor((y - d)/rowHeight);
+  col = Math.floor(x / colWidth);
 
   if (
-    y < NROWS * rowHeight && row >= 0 &&
+    (y - d) < NROWS * rowHeight && row >= 0 &&
     col >= 0 && bricks[row][col] == 1
   ) {
     dy = -dy;
@@ -323,25 +320,4 @@ function togglePause() {
 
 
 
-
-// rect(paddlex, HEIGHT-paddleh, paddlew, paddleh);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// End library code
 init();

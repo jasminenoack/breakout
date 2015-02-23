@@ -24,7 +24,8 @@ var ctx,
   rightDown,
   leftDown,
   lost,
-  d;
+  d,
+  lives;
 
 $(document).keydown(onKeyDown);
 $(document).keyup(onKeyUp);
@@ -34,6 +35,11 @@ $("#canvas").click(clickEvent)
 function checkLost() {
   if (lost) {
     togglePause()
+    if (lives > 1) {
+      lost = false;
+      lives -= 1;
+      resetBoard();
+    }
   }
 }
 
@@ -70,6 +76,7 @@ function draw() {
   movePaddle();
   drawBricks();
   hitBricks();
+  drawLives();
   drawPaddle();
 
   x += dx;
@@ -92,6 +99,12 @@ function drawBricks() {
       }
     }
   }
+}
+
+function drawLives() {
+  ctx.fillStyle = "White"
+  ctx.font = "18px sans-serif";
+  ctx.fillText("Lives: " + lives, 50, HEIGHT - 20);
 }
 
 function drawPaddle() {
@@ -119,6 +132,10 @@ function hitBricks() {
 }
 
 function hitPaddle() {
+  if (dy < 0) {
+    return
+  }
+
   dy = -dy;
   if (x < paddlex + paddlew / 3) {
     if (dx > 0) {
@@ -217,6 +234,10 @@ function initInterval() {
   return interval = setInterval(draw, 10);
 }
 
+function initLives() {
+  lives = 3;
+}
+
 function initMouse() {
   canvasMinX = $("#canvas").offset().left
   canvasMaxX = canvasMinX + WIDTH;
@@ -280,8 +301,10 @@ function onMouseMove(evt) {
 function pauseMessage() {
   ctx.fillStyle = "White"
   if (lost) {
+    ctx.font = "42px sans-serif";
+    ctx.fillText("GAME OVER!", 50, 150);
     ctx.font = "26px sans-serif";
-    ctx.fillText("Click to Restart!", 50, 150);
+    ctx.fillText("Click to Restart!", 50, 180);
   } else if (pause){
     ctx.font = "26px sans-serif";
     ctx.fillText("Click to Resume", 50, 150);
@@ -299,22 +322,26 @@ function rect(x, y, w, h) {
   ctx.fill();
 }
 
+function resetBoard() {
+  initBall()
+}
+
 function start() {
   initBall();
   initPaddle();
   initBricks();
   initUIVars();
+  initLives();
   draw();
 }
 
 function togglePause() {
- if (pause) {
+ if(pause) {
     pause = false
     initInterval()
   } else {
     pause = true
     endInterval()
-    draw
   }
 }
 

@@ -27,8 +27,8 @@ var ctx,
   d,
   lives;
 
-$(document).keydown(onKeyDown);
-$(document).keyup(onKeyUp);
+// $(document).keydown(onKeyDown);
+// $(document).keyup(onKeyUp);
 $(document).mousemove(onMouseMove);
 $("#canvas").click(clickEvent)
 
@@ -70,7 +70,6 @@ function draw() {
   clear();
   checkLost()
   drawBoard();
-  pauseMessage()
   circle(x, y, d);
   hitWalls();
   movePaddle();
@@ -78,7 +77,7 @@ function draw() {
   hitBricks();
   drawLives();
   drawPaddle();
-
+  pauseMessage()
   x += dx;
   y += dy;
 }
@@ -239,7 +238,7 @@ function initLives() {
 }
 
 function initMouse() {
-  canvasMinX = $("#canvas").offset().left
+  canvasMinX = $("#canvas").offset().left;
   canvasMaxX = canvasMinX + WIDTH;
 }
 
@@ -277,23 +276,23 @@ function movePaddle() {
   }
 }
 
-function onKeyDown(evt) {
-  if (evt.keyCode == 39) {
-    rightDown = true;
-  }
-  else if (evt.keyCode == 37) {
-    leftDown = true;
-  }
-}
-
-function onKeyUp(evt) {
-  if (evt.keyCode == 39) {
-    rightDown = false;
-  } else if (evt.keyCode == 37) leftDown = false;
-}
+// function onKeyDown(evt) {
+//   if (evt.keyCode == 39) {
+//     rightDown = true;
+//   }
+//   else if (evt.keyCode == 37) {
+//     leftDown = true;
+//   }
+// }
+//
+// function onKeyUp(evt) {
+//   if (evt.keyCode == 39) {
+//     rightDown = false;
+//   } else if (evt.keyCode == 37) leftDown = false;
+// }
 
 function onMouseMove(evt) {
-  if (evt.pageX > canvasMinX && evt.pageX < canvasMaxX) {
+  if (evt.pageX > canvasMinX + paddlew/3 && evt.pageX < canvasMaxX - paddlew/3) {
     paddlex = evt.pageX - canvasMinX - paddlew/2;
   }
 }

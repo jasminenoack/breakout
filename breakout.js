@@ -47,7 +47,7 @@ function clickEvent() {
   if (lost) {
     lost = false;
     init()
-  } else if (pause === undefined) {
+  } else if (pause === undefined || isWon()) {
     init()
   } else {
     togglePause()
@@ -68,24 +68,31 @@ function clear() {
 
 function draw() {
   clear();
-  checkLost()
-  drawBoard();
-  circle(x, y, d);
-  hitWalls();
-  movePaddle();
-  drawBricks();
-  hitBricks();
-  drawLives();
-  drawPaddle();
-  pauseMessage()
-  x += dx;
-  y += dy;
+  checkLost();
+  if (isWon()) {
+    wonMessage();
+  } else {
+    drawBoard();
+    hit();
+    // movePaddle();
+    pauseMessage();
+    x += dx;
+    y += dy;
+  }
 }
 
-function drawBoard() {
+function drawBackground() {
   ctx.fillStyle = "black";
   ctx.rect(0,0,WIDTH, HEIGHT);
   ctx.fill();
+}
+
+function drawBoard() {
+  drawBackground();
+  circle(x, y, d);
+  drawBricks();
+  drawLives();
+  drawPaddle();
 }
 
 function drawBricks() {
@@ -112,6 +119,11 @@ function drawPaddle() {
 
 function endInterval() {
   clearInterval(interval)
+}
+
+function hit() {
+  hitWalls();
+  hitBricks();
 }
 
 function hitBricks() {
@@ -200,17 +212,17 @@ function init() {
 
 function initBall() {
   x = (Math.random() * WIDTH / 2) + WIDTH / 4;
-  y = 150;
+  y = HEIGHT / 3 + 20 ;
   dx = WIDTH / 150;
   dy = HEIGHT / 75;
  d= 10;
 }
 
 function initBricks() {
-  NROWS = 8;
-  NCOLS = 8;
-  BRICKWIDTH = ((WIDTH - 1)/NCOLS) - 1;
   BRICKHEIGHT = 15;
+  NROWS = Math.floor(HEIGHT / 3 / (BRICKHEIGHT + 1 ));
+  NCOLS = Math.floor(WIDTH / (paddlew * 3 / 5));
+  BRICKWIDTH = ((WIDTH - 1)/NCOLS) - 1;
   PADDING = 1;
 
   bricks = new Array(NROWS);
@@ -244,7 +256,7 @@ function initMouse() {
 
 function initPaddle() {
   paddleh = 10 ;
-  paddlew = 75;
+  paddlew = WIDTH/5;
   paddlex = WIDTH/2 - paddlew/2;
 }
 
@@ -258,7 +270,7 @@ function initUIVars() {
 }
 
 function initWelcome() {
-  drawBoard();
+  drawBackground();
   ctx.fillStyle = "White"
   ctx.font = "48px sans-serif";
   ctx.fillText("Welcome", 10, 50);
@@ -344,6 +356,23 @@ function togglePause() {
   }
 }
 
+function isWon() {
+  for ( var i = 0; i < bricks.length; i++ ) {
+    if (bricks[i].indexOf(1) !== -1) {
+      return false
+    }
+  }
+  return true
+}
 
+function wonMessage() {
+  togglePause();
+  drawBackground();
+  ctx.fillStyle = "White"
+  ctx.font = "96px sans-serif";
+  ctx.fillText("You Win", 10, 100);
+  ctx.font = "26px sans-serif";
+  ctx.fillText("Click to Play Again!", 50, 150);
+}
 
 init();

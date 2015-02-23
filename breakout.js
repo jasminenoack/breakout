@@ -25,7 +25,11 @@ var ctx,
   leftDown,
   lost,
   d,
-  lives;
+  lives,
+  background,
+  lego;
+
+
 
 // $(document).keydown(onKeyDown);
 // $(document).keyup(onKeyUp);
@@ -55,9 +59,16 @@ function clickEvent() {
 }
 
 function circle(x,y,r) {
-  ctx.fillStyle = "blue"
+  var grd = ctx.createRadialGradient(x, y, r/5, x, y, r)
+  grd.addColorStop(0, "grey")
+  grd.addColorStop(1, "black")
+
+
+  ctx.fillStyle = grd //"gray"
+
+
   ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2, true);
+  ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.closePath();
   ctx.fill();
 }
@@ -82,9 +93,13 @@ function draw() {
 }
 
 function drawBackground() {
-  ctx.fillStyle = "black";
-  ctx.rect(0,0,WIDTH, HEIGHT);
-  ctx.fill();
+  ctx.drawImage(
+    background,
+    0,
+    0,
+    WIDTH,
+    HEIGHT
+  );
 }
 
 function drawBoard() {
@@ -99,9 +114,17 @@ function drawBricks() {
   for (i = 0; i < NROWS; i++) {
     for (j = 0; j < NCOLS; j++) {
       if (bricks[i][j] == 1) {
-        rect((j * (BRICKWIDTH + PADDING))+ PADDING,
-             (i * (BRICKHEIGHT + PADDING)) + PADDING,
-             BRICKWIDTH, BRICKHEIGHT)
+        ctx.drawImage(
+          lego,
+          // i * 15,
+          // i * 15,
+          // 100,
+          // 100,
+          (j * (BRICKWIDTH + PADDING))+ PADDING,
+          (i * (BRICKHEIGHT + PADDING)) + PADDING,
+          BRICKWIDTH,
+          BRICKHEIGHT
+        );
       }
     }
   }
@@ -184,22 +207,6 @@ function hitWalls() {
   }
 }
 
-function raiseDeltaY() {
-  if (dy <= (-HEIGHT/40)) {
-    return
-  } else {
-    dy += dy/3
-  }
-}
-
-function lowerDeltaY() {
-  if (dy >= -HEIGHT/150) {
-    return
-  } else {
-    dy -= dy/3
-  }
-}
-
 function init() {
   if (!ctx) {
     initCanvas();
@@ -270,14 +277,23 @@ function initUIVars() {
 }
 
 function initWelcome() {
+  clear();
   drawBackground();
-  ctx.fillStyle = "White"
-  ctx.font = "48px sans-serif";
-  ctx.fillText("Welcome", 10, 50);
+  ctx.fillStyle = "white"
+  ctx.font = "60px sans-serif bold";
+  ctx.fillText("Welcome!", 10, 50);
   ctx.font = "32px sans-serif";
   ctx.fillText("Play BreakOut", 20, 100);
   ctx.font = "26px sans-serif";
   ctx.fillText("Click to Start!", 50, 150);
+}
+
+function lowerDeltaY() {
+  if (dy >= -HEIGHT/150) {
+    return
+  } else {
+    dy -= dy/3
+  }
 }
 
 function movePaddle() {
@@ -325,8 +341,16 @@ function pauseMessage() {
   }
 }
 
+function raiseDeltaY() {
+  if (dy <= (-HEIGHT/40)) {
+    return
+  } else {
+    dy += dy/3
+  }
+}
+
 function rect(x, y, w, h) {
-  ctx.fillStyle = "red";
+  ctx.fillStyle = "black";
   ctx.beginPath();
   ctx.rect(x,y,w,h);
   ctx.closePath();
@@ -375,4 +399,13 @@ function wonMessage() {
   ctx.fillText("Click to Play Again!", 50, 150);
 }
 
-init();
+// load images
+
+
+background = new Image();
+background.src = "background.jpg"
+lego = new Image();
+lego.src = "lego.jpg"
+background.onload = function() {
+  init()
+}
